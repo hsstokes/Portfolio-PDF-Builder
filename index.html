@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio PDF Builder - 24-30 A3 Pages</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #ea37a3;
+            --secondary: #0a8080;
+        }
+        
+        .grid-background {
+            background-color: #f5f5f5;
+            background-image: 
+                linear-gradient(rgba(10, 128, 128, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(10, 128, 128, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .page-slot {
+            aspect-ratio: 420 / 297;
+            border: 3px dashed #ccc;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .page-slot:hover {
+            border-color: var(--primary);
+            background: #fdf1f5;
+        }
+        
+        .page-slot.has-image {
+            border-style: solid;
+            border-color: var(--secondary);
+        }
+        
+        .page-slot.drag-over {
+            border-color: var(--primary);
+            background: #fdf1f5;
+            transform: scale(1.02);
+        }
+        
+        .page-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .page-number {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: var(--secondary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            z-index: 10;
+        }
+        
+        .page-slot.has-image .page-number {
+            background: var(--primary);
+        }
+        
+        .page-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 24px 8px 8px;
+            font-size: 0.65rem;
+            text-align: center;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .page-slot:not(.has-image) .page-label {
+            background: transparent;
+            color: #555;
+            bottom: 4px;
+            padding: 0 4px;
+            font-size: 0.6rem;
+        }
+        
+        .page-category {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.55rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+        
+        .category-title { background: #fbbf24; color: #78350f; }
+        .category-intro { background: #a78bfa; color: #4c1d95; }
+        .category-research { background: #60a5fa; color: #1e3a8a; }
+        .category-development { background: #34d399; color: #064e3b; }
+        .category-refinement { background: #f472b6; color: #831843; }
+        .category-final { background: #fb923c; color: #7c2d12; }
+        
+        .remove-btn {
+            position: absolute;
+            top: 40px;
+            right: 8px;
+            background: #ef4444;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+        
+        .remove-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .page-slot.has-image .remove-btn {
+            display: flex;
+        }
+        
+        .upload-prompt {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            padding: 10px;
+            text-align: center;
+            padding-bottom: 30px;
+        }
+        
+        .page-slot.has-image .upload-prompt {
+            display: none;
+        }
+        
+        .status-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            border-bottom: 2px solid #eee;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            transition: width 0.3s ease;
+        }
+        
+        .page-count {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .page-count.valid {
+            color: var(--secondary);
+        }
+        
+        .page-count.invalid {
+            color: #ef4444;
+        }
+        
+        .drag-ghost {
+            opacity: 0.5;
+        }
+        
+        .reorder-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: grab;
+        }
+        
+        .page-slot.has-image:hover .reorder-handle {
+            opacity: 1;
+        }
+        
+        .section-divider {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, transparent, #ddd, transparent);
+            height: 2px;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .section-title {
+            grid-column: 1 / -1;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 12px;
+            margin: 10px 0;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .section-title h3 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .section-title .page-range {
+            background: var(--secondary);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: normal;
+        }
+        
+        .guidance-panel {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            max-width: 90vw;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.2);
+            z-index: 200;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .guidance-panel.open {
+            right: 0;
+        }
+        
+        .guidance-header {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+        
+        .guidance-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .guidance-section {
+            margin-bottom: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .guidance-section-header {
+            background: #f9fafb;
+            padding: 12px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
+        
+        .guidance-section-header:hover {
+            background: #f3f4f6;
+        }
+        
+        .guidance-section-content {
+            display: none;
+            padding: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .guidance-section.open .guidance-section-content {
+            display: block;
+        }
+        
+        .guidance-section.open .section-chevron {
+            transform: rotate(180deg);
+        }
+        
+        .checklist-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+            transition: all 0.2s;
+        }
+        
+        .checklist-item.completed {
+            border-left-color: var(--secondary);
+            background: #f0fdfa;
+        }
+        
+        .checklist-item strong {
+            color: #374151;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .checklist-item p {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin: 0;
+        }
+        
+        .checklist-item ul {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+        }
+        
+        .checklist-item li {
+            margin-bottom: 3px;
+        }
+        
+        .check-btn {
+            margin-top: 10px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .check-btn.unchecked {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .check-btn.checked {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .guidance-toggle {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        
+        .guidance-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .guidance-progress {
+            display: flex;
+            gap: 4px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .guidance-progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .guidance-progress-dot.filled {
+            background: white;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+        
+        .preview-thumb {
+            aspect-ratio: 420 / 297;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .preview-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-thumb span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            text-align: center;
+            font-size: 0.65rem;
+            padding: 2px;
+        }
+        
+        .structure-overview {
+            background: linear-gradient(135deg, #f0fdfa, #ecfdf5);
+            border: 2px solid #0a8080;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .structure-overview h3 {
+            color: #0a8080;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .structure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        
+        .structure-item {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+        
+        .structure-item:hover {
+            border-color: #0a8080;
+            transform: translateY(-2px);
+        }
+        
+        .structure-item .num {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0a8080;
+        }
+        
+        .structure-item .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .structure-item .pages {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .structure-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen grid-background">
+    
+    <div class="bg-gradient-to-r from-teal-600 to-pink-500 text-white py-6 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                <i data-lucide="book-open" class="w-8 h-8"></i>
+                Portfolio PDF Builder
+            </h1>
+            <p class="mt-2 opacity-90">Upload 24-30 A3 Landscape pages • Drag to reorder • Download as PDF</p>
+        </div>
+    </div>
+
+    <div class="bg-white border-b shadow-sm">
+        <div class="max-w-7xl mx-auto p-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Your Name *</label>
+                    <input type="text" id="studentName" 
+                           class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none"
+                           placeholder="Enter your full name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Student Number *</label>
+                    <input type="text" id="studentNumber" 
+                           class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none"
+                           placeholder="e.g., 22000436">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Unit Title</label>
+                    <input type="text" id="projectTitle" 
+                           class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none"
+                           placeholder="e.g., Integrated Professional Practice">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">IPF Group</label>
+                    <input type="text" id="groupNumber" 
+                           class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none"
+                           placeholder="e.g., G6">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar shadow-sm">
+        <div class="flex items-center gap-4 flex-wrap flex-1">
+            <span id="pageCount" class="page-count invalid">0 / 24-30 pages</span>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="previewPortfolio()" 
+                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+                Preview
+            </button>
+            <button onclick="clearAll()" 
+                    class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                Clear
+            </button>
+            <button id="downloadBtn" onclick="generatePDF()" 
+                    class="px-4 py-2 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white rounded-lg font-bold flex items-center gap-2 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                Download PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4">
+        
+        <div class="structure-overview">
+            <h3>
+                <i data-lucide="layout-list" class="w-5 h-5"></i>
+                Portfolio Structure Guide
+            </h3>
+            <div class="structure-grid">
+                <div class="structure-item">
+                    <div class="num">1</div>
+                    <div class="label">Title Page</div>
+                    <div class="pages">Page 1</div>
+                </div>
+                <div class="structure-item">
+                    <div class="num">1</div>
+                    <div class="label">Introduction</div>
+                    <div class="pages">Page 2</div>
+                </div>
+                <div class="structure-item">
+                    <div class="num">~10</div>
+                    <div class="label">Research</div>
+                    <div class="pages">Pages 3-12</div>
+                </div>
+                <div class="structure-item">
+                    <div class="num">~10</div>
+                    <div class="label">Design Development</div>
+                    <div class="pages">Pages 13-22</div>
+                </div>
+                <div class="structure-item">
+                    <div class="num">1</div>
+                    <div class="label">Similar but Different</div>
+                    <div class="pages">Page 23</div>
+                </div>
+                <div class="structure-item">
+                    <div class="num">1</div>
+                    <div class="label">Product Page</div>
+                    <div class="pages">Page 24</div>
+                </div>
+                <div class="structure-item">
+                    <div class="num">1</div>
+                    <div class="label">Final Line-Up</div>
+                    <div class="pages">Page 25</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border-2 border-dashed border-gray-300 hover:border-teal-500 transition-colors cursor-pointer"
+             id="bulkUpload"
+             onclick="document.getElementById('bulkFileInput').click()">
+            <div class="text-center">
+                <i data-lucide="upload-cloud" class="w-12 h-12 text-teal-500 mx-auto mb-2"></i>
+                <h3 class="text-lg font-bold text-gray-700">Drag & Drop Multiple Pages Here</h3>
+                <p class="text-gray-500 text-sm">Or click to select files • Images will be added in filename order</p>
+                <input type="file" id="bulkFileInput" class="hidden" accept="image/*" multiple onchange="handleBulkUpload(event)">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i data-lucide="layout-grid" class="w-5 h-5 text-teal-600"></i>
+                    Portfolio Pages (A3 Landscape)
+                </h2>
+                <button onclick="toggleGuidance()" 
+                        class="px-4 py-2 bg-gradient-to-r from-teal-500 to-pink-500 text-white rounded-lg font-medium flex items-center gap-2 text-sm hover:opacity-90 transition-opacity">
+                    <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+                    Checklist Guide
+                </button>
+            </div>
+            
+            <div id="pageGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            </div>
+        </div>
+    </div>
+
+    <div id="guidancePanel" class="guidance-panel">
+        <div class="guidance-header">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+                    Portfolio Checklist
+                </h2>
+                <button onclick="toggleGuidance()" class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-sm opacity-90 mt-1">Use this guide to ensure your portfolio meets all criteria</p>
+            <div class="guidance-progress" id="guidanceProgress"></div>
+        </div>
+        
+        <div class="guidance-content">
+            
+            <div class="guidance-section open" data-section="structure">
+                <div class="guidance-section-header" onclick="toggleSection('structure')">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="layers" class="w-4 h-4 text-amber-500"></i>
+                        Portfolio Structure (25 pages)
+                    </span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 section-chevron transition-transform"></i>
+                </div>
+                <div class="guidance-section-content">
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3 text-sm">
+                        <strong class="text-amber-800">Recommended Structure:</strong>
+                        <ol class="mt-2 text-amber-700 space-y-1 list-decimal list-inside">
+                            <li><strong>Title Page</strong> - Name, ID, Project, Group</li>
+                            <li><strong>Introduction</strong> - Project overview</li>
+                            <li><strong>Research</strong> - ~10 pages</li>
+                            <li><strong>Design Development</strong> - ~10 pages</li>
+                            <li><strong>Similar but Different</strong> - 1 page</li>
+                            <li><strong>Product Page</strong> - 1 page</li>
+                            <li><strong>Final Line-Up</strong> - 1 page</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="title-page">
+                        <strong>1. Title Page</strong>
+                        <p>Include your name, student ID, project title, and IPF group</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('title-page', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="intro-page">
+                        <strong>2. Introduction Page</strong>
+                        <p>Clear project context, inspiration, and what you'll explore</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('intro-page', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="research-pages">
+                        <strong>3. Research Pages (~10)</strong>
+                        <p>Diverse sources, quotes, visual research, inspiration</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('research-pages', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="dev-pages">
+                        <strong>4. Design Development (~10)</strong>
+                        <p>2D/3D ideas, sketches, iterations, refinement process</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('dev-pages', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="similar-different">
+                        <strong>5. Similar but Different Page</strong>
+                        <p>Show variety of similar design ideas with differences</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('similar-different', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="product-page">
+                        <strong>6. Product Page</strong>
+                        <p>Hero shot of your final product/design</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('product-page', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="final-lineup">
+                        <strong>7. Final Line-Up</strong>
+                        <p>Complete collection/range shown together</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('final-lineup', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guidance-section" data-section="research">
+                <div class="guidance-section-header" onclick="toggleSection('research')">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4 text-blue-500"></i>
+                        Research Quality
+                    </span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 section-chevron transition-transform"></i>
+                </div>
+                <div class="guidance-section-content">
+                    <div class="checklist-item" data-check="research-diversity">
+                        <strong>Diverse Sources</strong>
+                        <p>Include various types of research and inspiration</p>
+                        <ul>
+                            <li>Artist/designer case studies</li>
+                            <li>Historical or cultural context</li>
+                            <li>Material/technique research</li>
+                            <li>Market/trend analysis</li>
+                        </ul>
+                        <button class="check-btn unchecked" onclick="toggleCheck('research-diversity', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="research-response">
+                        <strong>Personal Response</strong>
+                        <p>Show your own thinking and analysis of research</p>
+                        <ul>
+                            <li>What you learned</li>
+                            <li>How it influences your work</li>
+                            <li>Critical evaluation</li>
+                        </ul>
+                        <button class="check-btn unchecked" onclick="toggleCheck('research-response', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guidance-section" data-section="visual">
+                <div class="guidance-section-header" onclick="toggleSection('visual')">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="palette" class="w-4 h-4 text-purple-500"></i>
+                        Visual Design
+                    </span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 section-chevron transition-transform"></i>
+                </div>
+                <div class="guidance-section-content">
+                    <div class="checklist-item" data-check="typography">
+                        <strong>Typography</strong>
+                        <p>Consistent, readable font choices</p>
+                        <ul>
+                            <li><strong>Body text:</strong> 12-14pt max</li>
+                            <li>ONE heading + ONE body font</li>
+                            <li>Clear hierarchy</li>
+                        </ul>
+                        <button class="check-btn unchecked" onclick="toggleCheck('typography', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="colour">
+                        <strong>Colour Palette</strong>
+                        <p>Consistent colours linked to your theme</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('colour', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                    
+                    <div class="checklist-item" data-check="layout">
+                        <strong>Layout & Flow</strong>
+                        <p>Clear visual hierarchy and page flow</p>
+                        <button class="check-btn unchecked" onclick="toggleCheck('layout', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guidance-section" data-section="referencing">
+                <div class="guidance-section-header" onclick="toggleSection('referencing')">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="book-marked" class="w-4 h-4 text-green-500"></i>
+                        Harvard Referencing
+                    </span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 section-chevron transition-transform"></i>
+                </div>
+                <div class="guidance-section-content">
+                    <div class="checklist-item" data-check="referencing">
+                        <strong>Proper Referencing</strong>
+                        <p>Credit all sources correctly</p>
+                        <div class="bg-gray-100 p-3 rounded-lg mt-3 text-xs">
+                            <strong>Format:</strong><br>
+                            <code>Last Name, Initial. (Year). <em>Title</em> [Image].</code>
+                        </div>
+                        <a href="https://hsstokes.github.io/Harvard-Referencing-Guide/" 
+                           target="_blank" 
+                           class="inline-block mt-3 text-teal-600 hover:text-teal-700 text-sm underline">
+                            📚 Full Harvard Referencing Guide →
+                        </a>
+                        <button class="check-btn unchecked" onclick="toggleCheck('referencing', this)">
+                            <i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
+                <h3 class="font-bold text-amber-800 flex items-center gap-2 mb-2">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    Requirements
+                </h3>
+                <ul class="text-amber-700 text-sm space-y-1">
+                    <li>✓ <strong>24-30 A3 Landscape pages</strong></li>
+                    <li>✓ Evidence of <strong>Harvard referencing</strong></li>
+                    <li>✓ Assessed <strong>holistically (100%)</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="toggleGuidance()" class="guidance-toggle" title="Open Checklist Guide">
+        <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+    </button>
+
+    <div id="previewModal" class="modal-overlay" onclick="closePreview(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Portfolio Preview</h2>
+                <button onclick="closePreview()" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="previewContent" class="preview-grid"></div>
+            <div class="mt-4 pt-4 border-t flex justify-end gap-3">
+                <button onclick="closePreview()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium">
+                    Close
+                </button>
+                <button onclick="closePreview(); generatePDF();" class="px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-bold">
+                    Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md">
+            <div class="relative w-20 h-20 mx-auto mb-4">
+                <div class="absolute inset-0 border-4 border-teal-200 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-teal-500 rounded-full animate-spin border-t-transparent"></div>
+            </div>
+            <p class="text-gray-800 font-bold text-xl">Building Your Portfolio PDF...</p>
+            <p class="text-gray-500 mt-2" id="loadingStatus">Preparing pages...</p>
+            <div class="mt-4 bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div id="loadingProgress" class="bg-teal-500 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-4 left-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all z-50 flex items-center gap-2">
+        <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let pages = [];
+        const totalSlots = 30;
+        let draggedIndex = null;
+        let checkedItems = {};
+
+        const pageStructure = [
+            { label: "Title Page", sublabel: "Name • ID • Project • Group", category: "title" },
+            { label: "Introduction", sublabel: "Project overview & context", category: "intro" },
+            { label: "Research", sublabel: "Page 1 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 2 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 3 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 4 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 5 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 6 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 7 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 8 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 9 of ~10", category: "research" },
+            { label: "Research", sublabel: "Page 10 of ~10", category: "research" },
+            { label: "Design Development", sublabel: "Page 1 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 2 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 3 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 4 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 5 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 6 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 7 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 8 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 9 of ~10", category: "development" },
+            { label: "Design Development", sublabel: "Page 10 of ~10", category: "development" },
+            { label: "Similar but Different", sublabel: "Design variations", category: "refinement" },
+            { label: "Product Page", sublabel: "Hero product shot", category: "final" },
+            { label: "Final Line-Up", sublabel: "Complete collection", category: "final" },
+            { label: "Extra Page", sublabel: "Optional", category: "" },
+            { label: "Extra Page", sublabel: "Optional", category: "" },
+            { label: "Extra Page", sublabel: "Optional", category: "" },
+            { label: "Extra Page", sublabel: "Optional", category: "" },
+            { label: "Extra Page", sublabel: "Optional", category: "" }
+        ];
+
+        function init() {
+            loadSavedData();
+            renderPageGrid();
+            updateStatus();
+            setupBulkUploadDragDrop();
+            updateGuidanceProgress();
+        }
+
+        function renderPageGrid() {
+            const grid = document.getElementById('pageGrid');
+            grid.innerHTML = '';
+
+            let currentSection = '';
+            
+            for (let i = 0; i < totalSlots; i++) {
+                const pageInfo = pageStructure[i];
+                const newSection = getSection(i);
+                
+                if (newSection && newSection !== currentSection) {
+                    currentSection = newSection;
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'section-title';
+                    sectionDiv.innerHTML = getSectionHTML(newSection, i);
+                    grid.appendChild(sectionDiv);
+                }
+                
+                const slot = document.createElement('div');
+                slot.className = `page-slot ${pages[i] ? 'has-image' : ''}`;
+                slot.dataset.index = i;
+                slot.draggable = pages[i] ? true : false;
+                
+                const categoryClass = pageInfo.category ? `category-${pageInfo.category}` : '';
+                
+                slot.innerHTML = `
+                    <span class="page-number">${i + 1}</span>
+                    ${pageInfo.category ? `<span class="page-category ${categoryClass}">${pageInfo.category}</span>` : ''}
+                    <button class="remove-btn" onclick="event.stopPropagation(); removePage(${i})">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                    ${pages[i] ? `<img src="${pages[i]}" alt="Page ${i + 1}">` : ''}
+                    <div class="upload-prompt">
+                        <i data-lucide="image-plus" class="w-6 h-6 mb-1"></i>
+                        <span class="text-xs font-medium">${pageInfo.label}</span>
+                    </div>
+                    <span class="page-label">${pageInfo.label}<br><span style="opacity:0.8;font-size:0.55rem">${pageInfo.sublabel}</span></span>
+                    ${pages[i] ? '<span class="reorder-handle">⋮⋮ Drag</span>' : ''}
+                `;
+
+                slot.onclick = (e) => {
+                    if (!e.target.closest('.remove-btn')) {
+                        uploadToSlot(i);
+                    }
+                };
+
+                slot.ondragstart = (e) => handleDragStart(e, i);
+                slot.ondragend = handleDragEnd;
+                slot.ondragover = (e) => handleDragOver(e, i);
+                slot.ondragleave = handleDragLeave;
+                slot.ondrop = (e) => handleDrop(e, i);
+
+                grid.appendChild(slot);
+            }
+
+            lucide.createIcons();
+        }
+
+        function getSection(index) {
+            if (index === 0) return 'title';
+            if (index === 1) return 'intro';
+            if (index >= 2 && index <= 11) return 'research';
+            if (index >= 12 && index <= 21) return 'development';
+            if (index === 22) return 'refinement';
+            if (index >= 23 && index <= 24) return 'final';
+            if (index >= 25) return 'extra';
+            return '';
+        }
+
+        function getSectionHTML(section, index) {
+            const sections = {
+                'title': { icon: 'user', title: 'Title Page', desc: 'Your name, student ID, project title, and IPF group', range: 'Page 1' },
+                'intro': { icon: 'file-text', title: 'Introduction', desc: 'Project context, inspiration, and overview', range: 'Page 2' },
+                'research': { icon: 'search', title: 'Research', desc: 'Visual research, artist studies, inspiration, and context', range: 'Pages 3-12' },
+                'development': { icon: 'pencil-ruler', title: 'Design Development', desc: '2D/3D ideas, sketches, iterations, and refinement', range: 'Pages 13-22' },
+                'refinement': { icon: 'copy', title: 'Similar but Different', desc: 'Show variety of similar design ideas', range: 'Page 23' },
+                'final': { icon: 'star', title: 'Final Outcomes', desc: 'Product page and final line-up', range: 'Pages 24-25' },
+                'extra': { icon: 'plus-circle', title: 'Extra Pages', desc: 'Optional additional pages (up to 30 total)', range: 'Pages 26-30' }
+            };
+            
+            const s = sections[section];
+            if (!s) return '';
+            
+            return `
+                <h3>
+                    <i data-lucide="${s.icon}" class="w-5 h-5 text-teal-600"></i>
+                    ${s.title}
+                    <span class="page-range">${s.range}</span>
+                </h3>
+                <p>${s.desc}</p>
+            `;
+        }
+
+        function uploadToSlot(index) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    processImage(file, index);
+                }
+            };
+            input.click();
+        }
+
+        function processImage(file, index) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                pages[index] = e.target.result;
+                saveData();
+                renderPageGrid();
+                updateStatus();
+                showToast(`Page ${index + 1} uploaded!`);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleBulkUpload(event) {
+            const files = Array.from(event.target.files);
+            files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+            let nextEmptySlot = 0;
+            for (let i = 0; i < totalSlots; i++) {
+                if (!pages[i]) {
+                    nextEmptySlot = i;
+                    break;
+                }
+            }
+
+            let uploadedCount = 0;
+            const filesToUpload = Math.min(files.length, totalSlots - nextEmptySlot);
+            
+            files.slice(0, filesToUpload).forEach((file, i) => {
+                const slotIndex = nextEmptySlot + i;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    pages[slotIndex] = e.target.result;
+                    uploadedCount++;
+                    if (uploadedCount === filesToUpload) {
+                        saveData();
+                        renderPageGrid();
+                        updateStatus();
+                        showToast(`${filesToUpload} page${filesToUpload !== 1 ? 's' : ''} uploaded!`);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            event.target.value = '';
+        }
+
+        function setupBulkUploadDragDrop() {
+            const bulkUpload = document.getElementById('bulkUpload');
+            
+            bulkUpload.ondragover = (e) => {
+                e.preventDefault();
+                bulkUpload.classList.add('border-teal-500', 'bg-teal-50');
+            };
+            
+            bulkUpload.ondragleave = () => {
+                bulkUpload.classList.remove('border-teal-500', 'bg-teal-50');
+            };
+            
+            bulkUpload.ondrop = (e) => {
+                e.preventDefault();
+                bulkUpload.classList.remove('border-teal-500', 'bg-teal-50');
+                
+                const files = Array.from(e.dataTransfer.files).filter(f => 
+                    f.type.startsWith('image/')
+                );
+                
+                if (files.length > 0) {
+                    const fakeEvent = { target: { files, value: '' } };
+                    handleBulkUpload(fakeEvent);
+                }
+            };
+        }
+
+        function handleDragStart(e, index) {
+            if (!pages[index]) {
+                e.preventDefault();
+                return;
+            }
+            draggedIndex = index;
+            e.target.classList.add('drag-ghost');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('drag-ghost');
+            document.querySelectorAll('.page-slot').forEach(slot => {
+                slot.classList.remove('drag-over');
+            });
+            draggedIndex = null;
+        }
+
+        function handleDragOver(e, index) {
+            e.preventDefault();
+            if (draggedIndex !== null && draggedIndex !== index) {
+                e.currentTarget.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, targetIndex) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            if (e.dataTransfer.files.length > 0 && draggedIndex === null) {
+                const file = e.dataTransfer.files[0];
+                if (file.type.startsWith('image/')) {
+                    processImage(file, targetIndex);
+                }
+                return;
+            }
+
+            if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                const temp = pages[draggedIndex];
+                pages[draggedIndex] = pages[targetIndex];
+                pages[targetIndex] = temp;
+                
+                saveData();
+                renderPageGrid();
+                updateStatus();
+                showToast('Pages swapped!');
+            }
+        }
+
+        function removePage(index) {
+            pages[index] = null;
+            saveData();
+            renderPageGrid();
+            updateStatus();
+            showToast('Page removed');
+        }
+
+        function clearAll() {
+            if (confirm('Remove all pages? This cannot be undone.')) {
+                pages = [];
+                saveData();
+                renderPageGrid();
+                updateStatus();
+                showToast('All pages cleared');
+            }
+        }
+
+        function updateStatus() {
+            const count = pages.filter(p => p).length;
+            const countEl = document.getElementById('pageCount');
+            const progressEl = document.getElementById('progressFill');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            countEl.textContent = `${count} / 24-30 pages`;
+            
+            if (count >= 24 && count <= 30) {
+                countEl.classList.remove('invalid');
+                countEl.classList.add('valid');
+                downloadBtn.disabled = false;
+            } else if (count > 0) {
+                countEl.classList.remove('valid');
+                countEl.classList.add('invalid');
+                downloadBtn.disabled = false;
+            } else {
+                countEl.classList.remove('valid');
+                countEl.classList.add('invalid');
+                downloadBtn.disabled = true;
+            }
+
+            const progress = Math.min(100, (count / 24) * 100);
+            progressEl.style.width = `${progress}%`;
+
+            if (count > 30) {
+                countEl.textContent = `${count} / 24-30 ⚠️ Max 30!`;
+            }
+        }
+
+        function toggleGuidance() {
+            const panel = document.getElementById('guidancePanel');
+            panel.classList.toggle('open');
+        }
+
+        function toggleSection(sectionId) {
+            const section = document.querySelector(`[data-section="${sectionId}"]`);
+            section.classList.toggle('open');
+            lucide.createIcons();
+        }
+
+        function toggleCheck(itemId, btn) {
+            checkedItems[itemId] = !checkedItems[itemId];
+            
+            const item = btn.closest('.checklist-item');
+            
+            if (checkedItems[itemId]) {
+                btn.classList.remove('unchecked');
+                btn.classList.add('checked');
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Completed!';
+                item.classList.add('completed');
+            } else {
+                btn.classList.remove('checked');
+                btn.classList.add('unchecked');
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Mark Complete';
+                item.classList.remove('completed');
+            }
+            
+            lucide.createIcons();
+            saveData();
+            updateGuidanceProgress();
+        }
+
+        function updateGuidanceProgress() {
+            const totalItems = document.querySelectorAll('.checklist-item').length;
+            const completedCount = Object.values(checkedItems).filter(v => v).length;
+            
+            const progressContainer = document.getElementById('guidanceProgress');
+            progressContainer.innerHTML = '';
+            
+            for (let i = 0; i < totalItems; i++) {
+                const dot = document.createElement('div');
+                dot.className = `guidance-progress-dot ${i < completedCount ? 'filled' : ''}`;
+                progressContainer.appendChild(dot);
+            }
+        }
+
+        function previewPortfolio() {
+            const content = document.getElementById('previewContent');
+            const filledPages = pages.map((p, i) => p ? { data: p, index: i, info: pageStructure[i] } : null).filter(p => p);
+
+            if (filledPages.length === 0) {
+                showToast('No pages to preview');
+                return;
+            }
+
+            content.innerHTML = filledPages.map(page => `
+                <div class="preview-thumb">
+                    <img src="${page.data}" alt="Page ${page.index + 1}">
+                    <span>P${page.index + 1}: ${page.info.label}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('previewModal').classList.add('show');
+            lucide.createIcons();
+        }
+
+        function closePreview(event) {
+            if (!event || event.target === event.currentTarget) {
+                document.getElementById('previewModal').classList.remove('show');
+            }
+        }
+
+        function saveData() {
+            try {
+                const data = {
+                    pages,
+                    checkedItems,
+                    studentName: document.getElementById('studentName').value,
+                    studentNumber: document.getElementById('studentNumber').value,
+                    projectTitle: document.getElementById('projectTitle').value,
+                    groupNumber: document.getElementById('groupNumber').value
+                };
+                localStorage.setItem('portfolioPages', JSON.stringify(data));
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        function loadSavedData() {
+            try {
+                const saved = localStorage.getItem('portfolioPages');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    pages = data.pages || [];
+                    checkedItems = data.checkedItems || {};
+                    
+                    Object.entries(checkedItems).forEach(([itemId, isChecked]) => {
+                        if (isChecked) {
+                            const item = document.querySelector(`[data-check="${itemId}"]`);
+                            if (item) {
+                                item.classList.add('completed');
+                                const btn = item.querySelector('.check-btn');
+                                if (btn) {
+                                    btn.classList.remove('unchecked');
+                                    btn.classList.add('checked');
+                                    btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 inline mr-1"></i> Completed!';
+                                }
+                            }
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        if (data.studentName) document.getElementById('studentName').value = data.studentName;
+                        if (data.studentNumber) document.getElementById('studentNumber').value = data.studentNumber;
+                        if (data.projectTitle) document.getElementById('projectTitle').value = data.projectTitle;
+                        if (data.groupNumber) document.getElementById('groupNumber').value = data.groupNumber;
+                        lucide.createIcons();
+                    }, 100);
+                }
+            } catch (e) {
+                console.warn('Could not load from localStorage:', e);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        async function generatePDF() {
+            const filledPages = pages.filter(p => p);
+
+            if (filledPages.length === 0) {
+                showToast('Please upload at least one page');
+                return;
+            }
+
+            const studentName = document.getElementById('studentName').value || 'Student';
+            const studentNumber = document.getElementById('studentNumber').value || '';
+
+            if (!document.getElementById('studentName').value || !document.getElementById('studentNumber').value) {
+                if (!confirm('Name and Student Number recommended. Continue anyway?')) return;
+            }
+
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingProgress').style.width = '0%';
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            try {
+                const { jsPDF } = window.jspdf;
+                
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a3'
+                });
+
+                const pageWidth = 420;
+                const pageHeight = 297;
+
+                for (let i = 0; i < filledPages.length; i++) {
+                    const progress = ((i + 1) / filledPages.length) * 100;
+                    document.getElementById('loadingProgress').style.width = `${progress}%`;
+                    document.getElementById('loadingStatus').textContent = `Processing page ${i + 1} of ${filledPages.length}...`;
+
+                    if (i > 0) {
+                        pdf.addPage('a3', 'landscape');
+                    }
+
+                    const imgData = filledPages[i];
+                    
+                    await new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.onload = function() {
+                            try {
+                                const imgWidth = img.width;
+                                const imgHeight = img.height;
+                                const imgAspect = imgWidth / imgHeight;
+                                const pageAspect = pageWidth / pageHeight;
+
+                                let drawWidth, drawHeight, drawX, drawY;
+
+                                if (imgAspect > pageAspect) {
+                                    drawWidth = pageWidth;
+                                    drawHeight = pageWidth / imgAspect;
+                                    drawX = 0;
+                                    drawY = (pageHeight - drawHeight) / 2;
+                                } else {
+                                    drawHeight = pageHeight;
+                                    drawWidth = pageHeight * imgAspect;
+                                    drawX = (pageWidth - drawWidth) / 2;
+                                    drawY = 0;
+                                }
+
+                                pdf.setFillColor(255, 255, 255);
+                                pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+                                
+                                pdf.addImage(imgData, 'JPEG', drawX, drawY, drawWidth, drawHeight, undefined, 'FAST');
+                                
+                                resolve();
+                            } catch (err) {
+                                console.error('Error adding image to PDF:', err);
+                                pdf.setFillColor(245, 245, 245);
+                                pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+                                pdf.setTextColor(150, 150, 150);
+                                pdf.setFontSize(24);
+                                pdf.text(`Page ${i + 1} - Error loading image`, pageWidth / 2, pageHeight / 2, { align: 'center' });
+                                resolve();
+                            }
+                        };
+                        img.onerror = function() {
+                            console.error('Error loading image');
+                            pdf.setFillColor(245, 245, 245);
+                            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+                            pdf.setTextColor(150, 150, 150);
+                            pdf.setFontSize(24);
+                            pdf.text(`Page ${i + 1} - Error loading image`, pageWidth / 2, pageHeight / 2, { align: 'center' });
+                            resolve();
+                        };
+                        img.src = imgData;
+                    });
+
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+
+                document.getElementById('loadingStatus').textContent = 'Generating PDF file...';
+                
+                const cleanName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+                const cleanNumber = studentNumber.replace(/[^a-zA-Z0-9]/g, '');
+                const date = new Date().toISOString().split('T')[0];
+                const fileName = `Portfolio_${cleanName}_${cleanNumber}_${date}.pdf`;
+
+                pdf.save(fileName);
+                showToast('PDF downloaded successfully! 📄');
+
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                showToast('Error generating PDF: ' + error.message);
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            
+            ['studentName', 'studentNumber', 'projectTitle', 'groupNumber'].forEach(id => {
+                document.getElementById(id).addEventListener('change', saveData);
+                document.getElementById(id).addEventListener('input', saveData);
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePreview();
+                document.getElementById('guidancePanel').classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -38,16 +38,7 @@ body {
   line-height: 1.7;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: -10%; left: 48%;
-  width: 4px; height: 120vh;
-  background: rgba(255,255,255,0.6);
-  transform: rotate(12deg);
-  pointer-events: none;
-  z-index: 0;
-}
+/* no decorative body overlay */
 
 .container {
   max-width: 1200px;
@@ -57,7 +48,7 @@ body::before {
   z-index: 1;
 }
 
-/* HEADER */
+/* ── HEADER ── */
 .site-header {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -90,7 +81,40 @@ body::before {
   line-height: 1.8;
 }
 
-/* STUDENT DETAILS PANEL */
+/* ── NOTICE BANNER ── */
+.notice-banner {
+  background: var(--gold-light);
+  border-left: 5px solid var(--gold);
+  border-radius: 0 4px 4px 0;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.notice-banner .notice-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.notice-banner p {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--ink);
+}
+.notice-banner strong {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ── STUDENT DETAILS ── */
 .details-panel {
   background: white;
   border: 2px solid var(--ink);
@@ -102,12 +126,9 @@ body::before {
   gap: 16px;
   align-items: end;
 }
-@media (max-width: 760px) {
-  .details-panel { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 500px) {
-  .details-panel { grid-template-columns: 1fr; }
-}
+@media (max-width: 760px) { .details-panel { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 500px) { .details-panel { grid-template-columns: 1fr; } }
+
 .field-group { display: flex; flex-direction: column; gap: 5px; }
 .field-group label {
   font-family: 'Space Mono', monospace;
@@ -132,47 +153,86 @@ body::before {
   border-color: var(--teal);
   background: white;
 }
+.field-hint {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--concrete);
+  margin-top: 3px;
+}
 
-/* STATUS BAR */
-.status-bar {
+/* ── CHECKLIST ROW ── */
+.checklist-row {
   background: white;
   border: 2px solid var(--warm-mid);
   border-radius: 4px;
   padding: 14px 20px;
   margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.76rem;
+  color: var(--concrete);
+  line-height: 1.4;
+  cursor: pointer;
+}
+.check-item input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 2px;
+  cursor: pointer;
+}
+.check-item.checked { color: var(--teal); }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: white;
+  border: 2px solid var(--warm-mid);
+  border-radius: 4px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
   position: sticky;
   top: 8px;
   z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .page-count {
   font-family: 'Space Mono', monospace;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   white-space: nowrap;
   color: var(--concrete);
+  min-width: 120px;
 }
 .page-count.ready { color: var(--teal); }
 .page-count.warning { color: var(--pink); }
 .progress-wrap {
   flex: 1;
-  min-width: 100px;
-  height: 6px;
+  min-width: 80px;
+  height: 5px;
   background: var(--warm-mid);
-  border-radius: 0;
 }
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--pink), var(--teal));
   transition: width 0.4s ease;
-  border-radius: 0;
 }
+
+/* ── BUTTONS ── */
 .btn {
   font-family: 'Space Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -183,62 +243,81 @@ body::before {
   transition: all 0.2s;
   white-space: nowrap;
 }
-.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 .btn-ghost { background: white; color: var(--ink); }
 .btn-primary { background: var(--ink); color: white; }
-.btn-pink { background: var(--pink); border-color: var(--pink); color: white; }
 .btn-teal { background: var(--teal); border-color: var(--teal); color: white; }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
-/* DROP ZONE */
+/* ── DROP ZONE ── */
 .drop-zone {
   border: 3px dashed var(--warm-mid);
   border-radius: 4px;
-  padding: 28px;
+  padding: 32px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   background: white;
 }
 .drop-zone:hover, .drop-zone.drag-active {
   border-color: var(--pink);
   background: var(--pink-light);
 }
-.drop-zone-icon {
-  font-size: 2rem;
-  margin-bottom: 6px;
-  opacity: 0.4;
+.drop-zone-icon { font-size: 2.2rem; margin-bottom: 8px; opacity: 0.35; }
+.drop-zone h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--teal);
+  margin-bottom: 5px;
 }
 .drop-zone p {
   font-family: 'Space Mono', monospace;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--teal);
-  margin-bottom: 4px;
-}
-.drop-zone small {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--concrete);
+  margin: 0;
 }
 
-/* INFO BOX */
+/* ── INFO BOX ── */
 .info-box {
   border-left: 4px solid var(--teal);
   background: var(--teal-light);
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 0 4px 4px 0;
   margin-bottom: 20px;
-  font-size: 0.82rem;
   font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.7;
 }
-.info-box strong { color: var(--teal); }
+.info-box strong { color: var(--teal); font-family: 'Space Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 3px; }
 
-/* PAGE GRID */
-.grid-section-label {
+.ref-box {
+  border-left: 4px solid var(--purple);
+  background: var(--purple-light);
+  padding: 12px 16px;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+.ref-box strong { color: var(--purple); font-family: 'Space Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
+.ref-example {
+  background: white;
+  border: 1px dashed var(--purple);
+  border-radius: 3px;
+  padding: 7px 10px;
+  font-size: 0.75rem;
+  color: var(--ink);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* ── PAGE GRID ── */
+.grid-label {
   font-family: 'Space Mono', monospace;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -269,136 +348,87 @@ body::before {
   align-items: center;
   justify-content: center;
 }
-.page-slot:hover {
-  border-color: var(--pink);
-  background: var(--pink-light);
-}
-.page-slot.filled {
-  border-style: solid;
-  border-color: var(--teal);
-  cursor: grab;
-}
+.page-slot:hover { border-color: var(--pink); background: var(--pink-light); }
+.page-slot.filled { border-style: solid; border-color: var(--teal); cursor: grab; }
 .page-slot.filled:active { cursor: grabbing; }
-.page-slot.drag-over {
-  border-color: var(--pink);
-  background: var(--pink-light);
-  transform: scale(1.03);
-}
-.page-slot.dragging { opacity: 0.4; }
+.page-slot.drag-over { border-color: var(--pink); background: var(--pink-light); transform: scale(1.03); }
+.page-slot.dragging { opacity: 0.35; }
 
 .page-slot img {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: cover;
   display: block;
   pointer-events: none;
 }
 
 .slot-num {
-  position: absolute;
-  top: 7px;
-  left: 7px;
-  background: var(--teal);
-  color: white;
+  position: absolute; top: 7px; left: 7px;
+  background: var(--teal); color: white;
   font-family: 'Space Mono', monospace;
-  font-size: 0.65rem;
-  font-weight: 700;
-  width: 24px;
-  height: 24px;
+  font-size: 0.62rem; font-weight: 700;
+  width: 24px; height: 24px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   z-index: 5;
 }
 .page-slot.filled .slot-num { background: var(--pink); }
 
 .slot-remove {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  width: 22px;
-  height: 22px;
+  position: absolute; top: 7px; right: 7px;
+  background: #ef4444; color: white;
+  border: none; width: 22px; height: 22px;
   border-radius: 50%;
-  font-size: 0.8rem;
+  font-size: 0.85rem; line-height: 1;
   cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
+  display: none; align-items: center; justify-content: center;
   z-index: 5;
-  line-height: 1;
   transition: transform 0.15s;
 }
 .slot-remove:hover { transform: scale(1.15); }
 .page-slot.filled .slot-remove { display: flex; }
 
 .slot-drag-hint {
-  position: absolute;
-  bottom: 7px;
-  right: 7px;
-  background: rgba(0,0,0,0.55);
-  color: white;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.52rem;
-  padding: 2px 6px;
-  border-radius: 2px;
-  display: none;
-  pointer-events: none;
+  position: absolute; bottom: 7px; right: 7px;
+  background: rgba(0,0,0,0.55); color: white;
+  font-family: 'Space Mono', monospace; font-size: 0.5rem;
+  padding: 2px 6px; border-radius: 2px;
+  display: none; pointer-events: none;
 }
 .page-slot.filled:hover .slot-drag-hint { display: block; }
 
-.slot-empty-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: var(--concrete);
-  pointer-events: none;
-  padding-bottom: 18px;
+.slot-empty-inner {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; color: var(--concrete);
+  pointer-events: none; padding-bottom: 16px;
 }
-.slot-empty-label span:first-child { font-size: 1.4rem; opacity: 0.3; }
-.slot-empty-label span:last-child {
+.slot-empty-inner .plus { font-size: 1.6rem; opacity: 0.25; }
+.slot-empty-inner .lbl {
   font-family: 'Space Mono', monospace;
-  font-size: 0.58rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: 0.55rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
 }
-.page-slot.filled .slot-empty-label { display: none; }
+.page-slot.filled .slot-empty-inner { display: none; }
 
-/* ADD PAGE BUTTON */
-.add-page-btn {
+/* ADD TILE */
+.add-tile {
   aspect-ratio: 420 / 297;
   background: white;
   border: 3px dashed var(--warm-mid);
   border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--concrete);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; cursor: pointer;
+  transition: all 0.2s; color: var(--concrete);
 }
-.add-page-btn:hover {
-  border-color: var(--teal);
-  background: var(--teal-light);
-  color: var(--teal);
-}
-.add-page-btn span:first-child { font-size: 1.8rem; }
-.add-page-btn span:last-child {
+.add-tile:hover { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
+.add-tile .plus { font-size: 2rem; }
+.add-tile .lbl {
   font-family: 'Space Mono', monospace;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: 0.58rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
 }
 
-/* DIAGONAL RULE */
+/* ── DIAGONAL RULE ── */
 .diagonal-rule {
   height: 3px;
   background: linear-gradient(90deg, var(--pink), var(--teal));
@@ -406,79 +436,74 @@ body::before {
   transform: skewX(-15deg);
 }
 
-/* LOADING OVERLAY */
+/* ── FILENAME PREVIEW ── */
+.filename-box {
+  background: white;
+  border: 2px solid var(--warm-mid);
+  border-radius: 4px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+}
+.filename-box .lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--teal); margin-bottom: 5px;
+}
+.filename-box .name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem; color: var(--concrete);
+  word-break: break-all;
+}
+
+/* ── LOADING ── */
 .loading-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(26,26,26,0.85);
-  z-index: 500;
-  align-items: center;
-  justify-content: center;
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,26,26,0.88);
+  z-index: 500; align-items: center; justify-content: center;
 }
 .loading-overlay.show { display: flex; }
 .loading-card {
-  background: white;
-  border: 3px solid var(--ink);
-  border-radius: 4px;
-  padding: 36px 48px;
-  text-align: center;
-  max-width: 360px;
+  background: white; border: 3px solid var(--ink);
+  border-radius: 4px; padding: 36px 48px;
+  text-align: center; max-width: 360px; width: 90%;
 }
 .loading-card h3 {
   font-family: 'DM Serif Display', serif;
-  font-size: 1.3rem;
-  font-weight: 400;
-  margin-bottom: 8px;
+  font-size: 1.3rem; font-weight: 400; margin-bottom: 8px;
 }
-.loading-card p {
+.loading-card .status {
   font-family: 'Space Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--concrete);
-  margin-bottom: 16px;
+  font-size: 0.68rem; color: var(--concrete); margin-bottom: 16px;
 }
-.loading-bar {
-  height: 6px;
-  background: var(--warm-mid);
-}
+.loading-bar { height: 5px; background: var(--warm-mid); }
 .loading-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--pink), var(--teal));
   transition: width 0.3s ease;
 }
 .spinner {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border: 3px solid var(--warm-mid);
   border-top-color: var(--teal);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin: 0 auto 14px;
+  margin: 0 auto 16px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* TOAST */
+/* ── TOAST ── */
 .toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
+  position: fixed; bottom: 20px; left: 50%;
   transform: translateX(-50%) translateY(60px);
-  background: var(--ink);
-  color: white;
+  background: var(--ink); color: white;
   font-family: 'Space Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 10px 22px;
-  border-radius: 3px;
-  opacity: 0;
-  transition: all 0.3s ease;
-  z-index: 400;
-  white-space: nowrap;
+  font-size: 0.7rem; font-weight: 700;
+  padding: 10px 22px; border-radius: 3px;
+  opacity: 0; transition: all 0.3s ease;
+  z-index: 400; white-space: nowrap;
 }
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 footer {
   text-align: center;
@@ -486,8 +511,9 @@ footer {
   border-top: 1px dashed var(--warm-mid);
   margin-top: 40px;
   font-family: 'Space Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--concrete);
+  line-height: 2;
 }
 
 @media (max-width: 600px) {
@@ -504,7 +530,7 @@ footer {
   <div class="loading-card">
     <div class="spinner"></div>
     <h3>Building your PDF</h3>
-    <p id="loadingStatus">Preparing pages…</p>
+    <p class="status" id="loadingStatus">Preparing pages…</p>
     <div class="loading-bar"><div class="loading-fill" id="loadingFill" style="width:0%"></div></div>
   </div>
 </div>
@@ -519,9 +545,18 @@ footer {
       <h1>Portfolio<br><em>PDF Builder</em></h1>
     </div>
     <div class="header-meta">
-      Upload pages<br>↓<br>Download PDF
+      Upload · arrange<br>↓<br>download PDF
     </div>
   </header>
+
+  <!-- IMPORTANT NOTICE -->
+  <div class="notice-banner">
+    <div class="notice-icon">⚠</div>
+    <div>
+      <strong>Important — read before submitting</strong>
+      Your file must open as a <em>PDF document</em> — not a Photoshop file, not a folder of images. When you click the download button below it saves a <strong>.pdf</strong> file. Check it opens correctly in Adobe Acrobat or Preview before uploading to Padlet. Submitting the wrong file type can affect your grade.
+    </div>
+  </div>
 
   <!-- STUDENT DETAILS -->
   <div class="details-panel">
@@ -538,68 +573,108 @@ footer {
       <input type="text" id="groupId" placeholder="e.g. D3/D4">
     </div>
     <div class="field-group">
-      <label for="unitTitle">Unit / Project</label>
-      <input type="text" id="unitTitle" placeholder="e.g. Portfolio Week">
+      <label for="unitTitle">Unit</label>
+      <input type="text" id="unitTitle" placeholder="e.g. ITSF">
+      <span class="field-hint">Introduction to Study in Fashion</span>
     </div>
+  </div>
+
+  <!-- PRE-FLIGHT CHECKLIST -->
+  <div class="checklist-row" id="checklistRow">
+    <label class="check-item" onclick="toggleCheck(this)">
+      <input type="checkbox"> Pages are A3 landscape (420×297mm), 300 dpi
+    </label>
+    <label class="check-item" onclick="toggleCheck(this)">
+      <input type="checkbox"> Typography: 1–2 fonts, body text 9–14pt
+    </label>
+    <label class="check-item" onclick="toggleCheck(this)">
+      <input type="checkbox"> All images referenced — see Harvard guide below
+    </label>
+    <label class="check-item" onclick="toggleCheck(this)">
+      <input type="checkbox"> File will be checked before uploading to Padlet
+    </label>
   </div>
 
   <!-- STATUS BAR -->
   <div class="status-bar">
-    <span class="page-count" id="pageCount">0 pages uploaded</span>
+    <span class="page-count" id="pageCount">0 pages</span>
     <div class="progress-wrap">
       <div class="progress-fill" id="progressFill" style="width:0%"></div>
     </div>
     <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
-    <button class="btn btn-primary" id="downloadBtn" onclick="buildPDF()" disabled>Download PDF</button>
+    <button class="btn btn-primary" id="downloadBtn" onclick="buildPDF()" disabled>↓ Download PDF</button>
   </div>
 
   <!-- DROP ZONE -->
   <div class="drop-zone" id="dropZone" onclick="document.getElementById('bulkInput').click()">
     <div class="drop-zone-icon">⬆</div>
-    <p>Drop all your pages here, or click to select</p>
-    <small>JPEGs or PNGs · A3 landscape · files are sorted by name automatically</small>
+    <h3>Drop all your pages here, or click to select</h3>
+    <p>JPEG or PNG · A3 landscape · sorted by filename automatically · max 40 pages</p>
     <input type="file" id="bulkInput" accept="image/*" multiple style="display:none" onchange="handleBulkUpload(event)">
   </div>
 
+  <!-- HOW TO USE -->
   <div class="info-box">
-    <strong>How to use:</strong> Upload your edited A3 pages above. Drag to reorder them. Click a page to replace it. Hit × to remove. When you're happy with the order, enter your name and student ID then download.
+    <strong>How to use</strong>
+    Upload your finished A3 pages above — drag a whole folder in at once if you like, files sort by name. Drag the thumbnails below to reorder. Click any thumbnail to replace it. Hit × to remove. Fill in your name and student ID, then hit Download PDF.
+  </div>
+
+  <!-- FONT REMINDER -->
+  <div class="info-box" style="border-color:var(--pink);background:var(--pink-light);">
+    <strong style="color:var(--pink);">Typography check</strong>
+    Your pages should use <em>consistent</em> font choices throughout — ideally one heading font and one body font. Body text should be <strong>9–14pt</strong> maximum. Avoid Chalkboard. Good choices for fashion portfolios: Andale Mono, Orator Std, Typewriter Condensed, or a clean sans-serif. Font choices are part of your visual identity and are assessed.
+  </div>
+
+  <!-- HARVARD REFERENCING -->
+  <div class="ref-box">
+    <strong>Harvard referencing reminder</strong>
+    Every image you did not make yourself must be credited on the page it appears. Use this format:
+    <div class="ref-example">Artist, I. (Year) <em>Title of work</em> [medium]. Available at: URL (Accessed: DD Month YYYY).</div>
+    <div class="ref-example">Surname, I. (Year) <em>Title of website page</em>. Site name. Available at: URL (Accessed: DD Month YYYY).</div>
+    Full guide: <a href="https://hsstokes.github.io/Harvard-Referencing-Guide/" target="_blank" style="color:var(--purple);font-weight:700;">hsstokes.github.io/Harvard-Referencing-Guide</a>
   </div>
 
   <!-- PAGE GRID -->
-  <div class="grid-section-label" id="gridLabel" style="display:none">Your pages — drag to reorder</div>
-
+  <div class="grid-label" id="gridLabel" style="display:none">Your pages — drag to reorder</div>
   <div class="page-grid" id="pageGrid"></div>
 
   <div class="diagonal-rule"></div>
 
-  <!-- NAMING GUIDE -->
-  <div style="background:white;border:2px solid var(--warm-mid);border-radius:4px;padding:16px 20px;margin-bottom:20px;">
-    <div style="font-family:'Space Mono',monospace;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);margin-bottom:8px;">Your PDF will be named</div>
-    <div id="filenamePrev" style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;color:var(--concrete);word-break:break-all;">Portfolio_YourName_YourID.pdf</div>
+  <!-- FILENAME PREVIEW + DOWNLOAD -->
+  <div class="filename-box">
+    <div class="lbl">Your PDF will be saved as</div>
+    <div class="name" id="filenamePrev">Portfolio_YourName_YourID.pdf</div>
   </div>
 
-  <div style="text-align:center;">
-    <button class="btn btn-teal" style="padding:14px 36px;font-size:0.8rem;" id="downloadBtn2" onclick="buildPDF()" disabled>Download PDF</button>
+  <div style="text-align:center;margin-bottom:12px;">
+    <button class="btn btn-teal" style="padding:14px 40px;font-size:0.78rem;" id="downloadBtn2" onclick="buildPDF()" disabled>↓ Download PDF</button>
   </div>
+  <p style="text-align:center;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--concrete);">
+    Your images never leave your device — everything is processed in your browser.
+  </p>
 
-</div>
+</div><!-- /container -->
 
 <footer>
-  © 2025 Portfolio PDF Builder · IELS Level 5 · Your images never leave your device
+  © 2025 Portfolio PDF Builder · IELS Level 5<br>
+  Images are processed locally — nothing is uploaded to any server
 </footer>
 
 <script>
 let pages = [];
 let dragSrcIdx = null;
-const MAX_PAGES = 40;
+const MAX = 40;
 
 function init() {
   setupDropZone();
   renderGrid();
+  ['studentName','studentId','groupId','unitTitle'].forEach(id =>
+    document.getElementById(id).addEventListener('input', updateFilename)
+  );
+}
 
-  ['studentName','studentId','groupId','unitTitle'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updateFilename);
-  });
+function toggleCheck(label) {
+  setTimeout(() => label.classList.toggle('checked', label.querySelector('input').checked), 0);
 }
 
 function setupDropZone() {
@@ -607,8 +682,7 @@ function setupDropZone() {
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-active'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('drag-active'));
   dz.addEventListener('drop', e => {
-    e.preventDefault();
-    dz.classList.remove('drag-active');
+    e.preventDefault(); dz.classList.remove('drag-active');
     const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
     if (files.length) addFiles(files);
   });
@@ -622,18 +696,18 @@ function handleBulkUpload(e) {
 
 function addFiles(files) {
   files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-  const slots = MAX_PAGES - pages.length;
-  if (slots <= 0) { toast('Maximum ' + MAX_PAGES + ' pages reached'); return; }
+  const slots = MAX - pages.length;
+  if (slots <= 0) { toast('Maximum ' + MAX + ' pages reached'); return; }
   const toAdd = files.slice(0, slots);
   let loaded = 0;
   toAdd.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
+    const r = new FileReader();
+    r.onload = e => {
       pages.push(e.target.result);
       loaded++;
       if (loaded === toAdd.length) { renderGrid(); updateStatus(); toast(loaded + ' page' + (loaded > 1 ? 's' : '') + ' added'); }
     };
-    reader.readAsDataURL(file);
+    r.readAsDataURL(file);
   });
   if (files.length > slots) toast('Only ' + slots + ' slot' + (slots > 1 ? 's' : '') + ' remaining — some files skipped');
 }
@@ -647,136 +721,91 @@ function renderGrid() {
   pages.forEach((src, i) => {
     const slot = document.createElement('div');
     slot.className = 'page-slot filled';
-    slot.dataset.index = i;
     slot.draggable = true;
     slot.innerHTML = `
       <img src="${src}" alt="Page ${i+1}">
       <span class="slot-num">${i+1}</span>
-      <button class="slot-remove" onclick="removePage(event,${i})" title="Remove page">×</button>
+      <button class="slot-remove" title="Remove">×</button>
       <span class="slot-drag-hint">⋮⋮ drag to reorder</span>
     `;
-
-    slot.addEventListener('dragstart', e => {
-      dragSrcIdx = i;
-      setTimeout(() => slot.classList.add('dragging'), 0);
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    slot.addEventListener('dragend', () => {
-      slot.classList.remove('dragging');
-      document.querySelectorAll('.page-slot').forEach(s => s.classList.remove('drag-over'));
-    });
-    slot.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (dragSrcIdx !== null && dragSrcIdx !== i) slot.classList.add('drag-over');
-    });
+    slot.querySelector('.slot-remove').addEventListener('click', e => { e.stopPropagation(); removePage(i); });
+    slot.addEventListener('click', e => { if (!e.target.classList.contains('slot-remove')) replaceSlot(i); });
+    slot.addEventListener('dragstart', e => { dragSrcIdx = i; setTimeout(() => slot.classList.add('dragging'), 0); e.dataTransfer.effectAllowed = 'move'; });
+    slot.addEventListener('dragend', () => { slot.classList.remove('dragging'); document.querySelectorAll('.page-slot').forEach(s => s.classList.remove('drag-over')); });
+    slot.addEventListener('dragover', e => { e.preventDefault(); if (dragSrcIdx !== null && dragSrcIdx !== i) slot.classList.add('drag-over'); });
     slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
     slot.addEventListener('drop', e => {
-      e.preventDefault();
-      slot.classList.remove('drag-over');
+      e.preventDefault(); slot.classList.remove('drag-over');
       if (dragSrcIdx !== null && dragSrcIdx !== i) {
         const moved = pages.splice(dragSrcIdx, 1)[0];
         pages.splice(i, 0, moved);
         dragSrcIdx = null;
-        renderGrid();
-        updateStatus();
-        toast('Page order updated');
+        renderGrid(); updateStatus(); toast('Page order updated');
       }
     });
-
-    slot.addEventListener('click', e => {
-      if (e.target.classList.contains('slot-remove')) return;
-      replaceSlot(i);
-    });
-
     grid.appendChild(slot);
   });
 
-  if (pages.length < MAX_PAGES) {
-    const addBtn = document.createElement('div');
-    addBtn.className = 'add-page-btn';
-    addBtn.innerHTML = `<span>+</span><span>Add page</span>`;
-    addBtn.onclick = () => document.getElementById('bulkInput').click();
-    grid.appendChild(addBtn);
+  if (pages.length < MAX) {
+    const add = document.createElement('div');
+    add.className = 'add-tile';
+    add.innerHTML = '<span class="plus">+</span><span class="lbl">Add page</span>';
+    add.onclick = () => document.getElementById('bulkInput').click();
+    grid.appendChild(add);
   }
 }
 
-function removePage(e, i) {
-  e.stopPropagation();
-  pages.splice(i, 1);
-  renderGrid();
-  updateStatus();
-  toast('Page removed');
+function removePage(i) {
+  pages.splice(i, 1); renderGrid(); updateStatus(); toast('Page removed');
 }
 
 function replaceSlot(i) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      pages[i] = ev.target.result;
-      renderGrid();
-      toast('Page ' + (i+1) + ' replaced');
-    };
-    reader.readAsDataURL(file);
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = ev => { pages[i] = ev.target.result; renderGrid(); toast('Page ' + (i+1) + ' replaced'); };
+    r.readAsDataURL(file);
   };
-  input.click();
+  inp.click();
 }
 
 function clearAll() {
   if (!pages.length) return;
   if (!confirm('Remove all pages and start again?')) return;
-  pages = [];
-  renderGrid();
-  updateStatus();
-  toast('All pages cleared');
+  pages = []; renderGrid(); updateStatus(); toast('All pages cleared');
 }
 
 function updateStatus() {
   const n = pages.length;
   const el = document.getElementById('pageCount');
-  const bar = document.getElementById('progressFill');
-  const btn = document.getElementById('downloadBtn');
-  const btn2 = document.getElementById('downloadBtn2');
-
-  el.textContent = n === 0 ? '0 pages uploaded'
-    : n === 1 ? '1 page uploaded'
-    : n + ' pages uploaded';
-
-  el.className = 'page-count ' + (n >= 1 ? 'ready' : '');
-  if (n >= MAX_PAGES) { el.className = 'page-count warning'; el.textContent = n + ' pages · maximum reached'; }
-
-  bar.style.width = Math.min(100, (n / MAX_PAGES) * 100) + '%';
-  btn.disabled = n === 0;
-  btn2.disabled = n === 0;
-
+  el.textContent = n === 0 ? '0 pages' : n === 1 ? '1 page uploaded' : n + ' pages uploaded';
+  el.className = 'page-count' + (n >= 1 ? ' ready' : '') + (n >= MAX ? ' warning' : '');
+  if (n >= MAX) el.textContent = n + ' pages · max reached';
+  document.getElementById('progressFill').style.width = Math.min(100, (n / MAX) * 100) + '%';
+  document.getElementById('downloadBtn').disabled = n === 0;
+  document.getElementById('downloadBtn2').disabled = n === 0;
   updateFilename();
 }
 
 function updateFilename() {
-  const name = (document.getElementById('studentName').value || 'YourName').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-  const id = (document.getElementById('studentId').value || 'YourID').replace(/[^a-zA-Z0-9]/g, '');
+  const name = (document.getElementById('studentName').value || 'YourName').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  const id   = (document.getElementById('studentId').value || 'YourID').replace(/[^a-zA-Z0-9]/g,'');
   document.getElementById('filenamePrev').textContent = 'Portfolio_' + name + '_' + id + '.pdf';
 }
 
 async function buildPDF() {
   if (!pages.length) { toast('Upload at least one page first'); return; }
-
   const name = document.getElementById('studentName').value;
-  const id = document.getElementById('studentId').value;
-  if (!name || !id) {
-    if (!confirm('Add your name and student ID before downloading — or continue without?')) return;
-  }
+  const id   = document.getElementById('studentId').value;
+  if (!name || !id) { if (!confirm('Add your name and student ID before downloading — or continue anyway?')) return; }
 
   const overlay = document.getElementById('loadingOverlay');
   const statusEl = document.getElementById('loadingStatus');
-  const fillEl = document.getElementById('loadingFill');
+  const fillEl   = document.getElementById('loadingFill');
   overlay.classList.add('show');
   fillEl.style.width = '0%';
-
   await new Promise(r => setTimeout(r, 80));
 
   try {
@@ -786,46 +815,57 @@ async function buildPDF() {
 
     for (let i = 0; i < pages.length; i++) {
       statusEl.textContent = 'Adding page ' + (i+1) + ' of ' + pages.length + '…';
-      fillEl.style.width = Math.round(((i+1) / pages.length) * 90) + '%';
-
+      fillEl.style.width = Math.round(((i+1) / pages.length) * 92) + '%';
       if (i > 0) pdf.addPage('a3', 'landscape');
 
-      await new Promise((res, rej) => {
+      await new Promise(res => {
         const img = new Image();
         img.onload = () => {
-          const iw = img.width, ih = img.height;
-          const ir = iw / ih, pr = W / H;
-          let dw, dh, dx, dy;
-          if (ir > pr) { dw = W; dh = W / ir; dx = 0; dy = (H - dh) / 2; }
-          else { dh = H; dw = H * ir; dy = 0; dx = (W - dw) / 2; }
+          /* White background */
           pdf.setFillColor(255,255,255);
           pdf.rect(0, 0, W, H, 'F');
-          pdf.addImage(pages[i], 'JPEG', dx, dy, dw, dh, undefined, 'FAST');
+
+          /* Scale image to fill A3 maintaining its aspect ratio.
+             If the image is already A3 landscape it fills edge-to-edge.
+             If it is portrait or different ratio it is scaled to fit
+             within the page and centred — no stretching. */
+          const iw = img.naturalWidth  || img.width;
+          const ih = img.naturalHeight || img.height;
+          if (iw === 0 || ih === 0) { res(); return; }
+
+          const scaleW = W / iw;
+          const scaleH = H / ih;
+          const scale  = Math.min(scaleW, scaleH);   /* fit, not fill */
+          const dw = iw * scale;
+          const dh = ih * scale;
+          const dx = (W - dw) / 2;
+          const dy = (H - dh) / 2;
+
+          pdf.addImage(img, 'JPEG', dx, dy, dw, dh, undefined, 'FAST');
           res();
         };
         img.onerror = () => {
-          pdf.setFillColor(245,245,245);
-          pdf.rect(0,0,W,H,'F');
+          pdf.setFillColor(240,240,240); pdf.rect(0,0,W,H,'F');
+          pdf.setTextColor(150,150,150); pdf.setFontSize(18);
+          pdf.text('Page ' + (i+1) + ' — error loading image', W/2, H/2, { align:'center' });
           res();
         };
         img.src = pages[i];
       });
-
-      await new Promise(r => setTimeout(r, 20));
+      await new Promise(r => setTimeout(r, 15));
     }
 
     fillEl.style.width = '100%';
     statusEl.textContent = 'Saving file…';
     await new Promise(r => setTimeout(r, 200));
 
-    const cleanName = (name || 'Student').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
-    const cleanId = (id || '').replace(/[^a-zA-Z0-9]/g,'');
-    pdf.save('Portfolio_' + cleanName + (cleanId ? '_' + cleanId : '') + '.pdf');
-    toast('PDF downloaded!');
+    const cn = (name || 'Student').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+    const ci = (id || '').replace(/[^a-zA-Z0-9]/g,'');
+    pdf.save('Portfolio_' + cn + (ci ? '_' + ci : '') + '.pdf');
+    toast('PDF downloaded — open it to check before submitting!');
 
   } catch(err) {
-    toast('Error: ' + err.message);
-    console.error(err);
+    toast('Error: ' + err.message); console.error(err);
   } finally {
     overlay.classList.remove('show');
   }
@@ -833,10 +873,9 @@ async function buildPDF() {
 
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
+  el.textContent = msg; el.classList.add('show');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 3000);
+  el._t = setTimeout(() => el.classList.remove('show'), 4000);
 }
 
 document.addEventListener('DOMContentLoaded', init);

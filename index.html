@@ -272,11 +272,11 @@ body {
   background: linear-gradient(90deg, var(--pink), var(--teal));
   transition: width 0.4s ease;
 }
-/* marker at 20 pages (halfway to 40) */
+/* marker at 20 pages (20 of 50 = 40%) */
 .progress-wrap::after {
   content: '20';
   position: absolute;
-  left: 50%;
+  left: 40%;
   top: -4px;
   width: 2px;
   height: 13px;
@@ -581,6 +581,7 @@ footer {
   <div class="handin">
     <div class="handin-title">What to hand in</div>
     <div class="handin-total">20–40 A3 pages in total · minimum 20 · maximum 40</div>
+    <p style="font-size:0.76rem;color:var(--concrete);margin:-8px 0 14px;">Your introduction page and section divider pages do <strong>not</strong> count. You can upload up to 50 files in total.</p>
 
     <div class="rot-grid">
       <div class="rot-card">
@@ -661,7 +662,7 @@ footer {
   <div class="drop-zone" id="dropZone" onclick="document.getElementById('bulkInput').click()">
     <div class="drop-zone-icon">⬆</div>
     <h3>Drop all your pages here, or click to select</h3>
-    <p>JPEG or PNG · A3 landscape · sorted by filename · 20–40 pages</p>
+    <p>JPEG or PNG · A3 landscape · sorted by filename · up to 50 files (incl. intro &amp; dividers)</p>
     <input type="file" id="bulkInput" accept="image/*" multiple style="display:none" onchange="handleBulkUpload(event)">
   </div>
 
@@ -739,7 +740,7 @@ footer {
 <script>
 let pages = [];
 let dragSrcIdx = null;
-const MAX = 40;
+const MAX = 50;   /* 40 content pages + intro + section dividers */
 const MIN = 20;
 
 function init() {
@@ -870,7 +871,7 @@ function updateStatus() {
     el.textContent = n + ' pages ✓';
     el.className = 'page-count ready';
   } else {
-    el.textContent = n + ' pages ✓ · max reached';
+    el.textContent = n + ' files · upload limit reached';
     el.className = 'page-count ready';
   }
   document.getElementById('progressFill').style.width = Math.min(100, (n / MAX) * 100) + '%';

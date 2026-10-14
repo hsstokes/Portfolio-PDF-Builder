@@ -38,8 +38,6 @@ body {
   line-height: 1.7;
 }
 
-/* no decorative body overlay */
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -92,18 +90,8 @@ body {
   gap: 12px;
   align-items: flex-start;
 }
-.notice-banner .notice-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.notice-banner p {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.82rem;
-  line-height: 1.6;
-  margin: 0;
-  color: var(--ink);
-}
+.notice-banner .notice-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+.notice-banner p { font-size: 0.82rem; line-height: 1.6; margin: 0; }
 .notice-banner strong {
   font-family: 'Space Mono', monospace;
   font-size: 0.72rem;
@@ -113,6 +101,72 @@ body {
   display: block;
   margin-bottom: 4px;
 }
+
+/* ── WHAT TO HAND IN ── */
+.handin {
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.handin-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+.handin-total {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 14px;
+}
+.rot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 640px) { .rot-grid { grid-template-columns: 1fr; } }
+.rot-card {
+  border: 2px solid var(--teal);
+  border-top-width: 5px;
+  border-radius: 3px;
+  padding: 12px 14px;
+  background: var(--teal-light);
+}
+.rot-card.r2 { border-color: var(--purple); background: var(--purple-light); }
+.rot-card h3 {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--teal);
+  margin-bottom: 2px;
+}
+.rot-card.r2 h3 { color: var(--purple); }
+.rot-card .rot-note { font-size: 0.72rem; color: var(--concrete); margin-bottom: 8px; }
+.rot-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+  padding: 5px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.12);
+}
+.rot-row:last-child { border-bottom: none; }
+.rot-row span:last-child { font-family: 'Space Mono', monospace; font-weight: 700; white-space: nowrap; }
+.heading-tip {
+  background: var(--pink-light);
+  border-left: 4px solid var(--pink);
+  border-radius: 0 3px 3px 0;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.heading-tip strong { color: var(--pink); }
 
 /* ── STUDENT DETAILS ── */
 .details-panel {
@@ -148,17 +202,8 @@ body {
   color: var(--ink);
   transition: border-color 0.2s;
 }
-.field-group input:focus {
-  outline: none;
-  border-color: var(--teal);
-  background: white;
-}
-.field-hint {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  color: var(--concrete);
-  margin-top: 3px;
-}
+.field-group input:focus { outline: none; border-color: var(--teal); background: white; }
+.field-hint { font-size: 0.62rem; color: var(--concrete); margin-top: 3px; }
 
 /* ── CHECKLIST ROW ── */
 .checklist-row {
@@ -175,15 +220,13 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 0.76rem;
   color: var(--concrete);
   line-height: 1.4;
   cursor: pointer;
 }
 .check-item input[type="checkbox"] {
-  width: 15px;
-  height: 15px;
+  width: 15px; height: 15px;
   accent-color: var(--teal);
   flex-shrink: 0;
   margin-top: 2px;
@@ -213,7 +256,7 @@ body {
   font-size: 0.8rem;
   white-space: nowrap;
   color: var(--concrete);
-  min-width: 120px;
+  min-width: 170px;
 }
 .page-count.ready { color: var(--teal); }
 .page-count.warning { color: var(--pink); }
@@ -222,11 +265,24 @@ body {
   min-width: 80px;
   height: 5px;
   background: var(--warm-mid);
+  position: relative;
 }
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--pink), var(--teal));
   transition: width 0.4s ease;
+}
+/* marker at 20 pages (halfway to 40) */
+.progress-wrap::after {
+  content: '20';
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 2px;
+  height: 13px;
+  background: var(--ink);
+  font-family: 'Space Mono', monospace;
+  font-size: 0;
 }
 
 /* ── BUTTONS ── */
@@ -260,10 +316,7 @@ body {
   margin-bottom: 20px;
   background: white;
 }
-.drop-zone:hover, .drop-zone.drag-active {
-  border-color: var(--pink);
-  background: var(--pink-light);
-}
+.drop-zone:hover, .drop-zone.drag-active { border-color: var(--pink); background: var(--pink-light); }
 .drop-zone-icon { font-size: 2.2rem; margin-bottom: 8px; opacity: 0.35; }
 .drop-zone h3 {
   font-family: 'DM Serif Display', serif;
@@ -272,12 +325,7 @@ body {
   color: var(--teal);
   margin-bottom: 5px;
 }
-.drop-zone p {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.68rem;
-  color: var(--concrete);
-  margin: 0;
-}
+.drop-zone p { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--concrete); margin: 0; }
 
 /* ── INFO BOX ── */
 .info-box {
@@ -286,7 +334,6 @@ body {
   padding: 12px 16px;
   border-radius: 0 4px 4px 0;
   margin-bottom: 20px;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8rem;
   line-height: 1.7;
 }
@@ -298,7 +345,6 @@ body {
   padding: 12px 16px;
   border-radius: 0 4px 4px 0;
   margin-bottom: 20px;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8rem;
   line-height: 1.7;
 }
@@ -309,7 +355,6 @@ body {
   border-radius: 3px;
   padding: 7px 10px;
   font-size: 0.75rem;
-  color: var(--ink);
   margin-top: 6px;
   font-style: italic;
 }
@@ -326,15 +371,12 @@ body {
   padding-bottom: 6px;
   margin: 24px 0 14px;
 }
-
 .page-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
   margin-bottom: 10px;
 }
-
-/* PAGE SLOT */
 .page-slot {
   aspect-ratio: 420 / 297;
   background: white;
@@ -353,13 +395,7 @@ body {
 .page-slot.filled:active { cursor: grabbing; }
 .page-slot.drag-over { border-color: var(--pink); background: var(--pink-light); transform: scale(1.03); }
 .page-slot.dragging { opacity: 0.35; }
-
-.page-slot img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-  pointer-events: none;
-}
+.page-slot img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 
 .slot-num {
   position: absolute; top: 7px; left: 7px;
@@ -372,7 +408,6 @@ body {
   z-index: 5;
 }
 .page-slot.filled .slot-num { background: var(--pink); }
-
 .slot-remove {
   position: absolute; top: 7px; right: 7px;
   background: #ef4444; color: white;
@@ -386,7 +421,6 @@ body {
 }
 .slot-remove:hover { transform: scale(1.15); }
 .page-slot.filled .slot-remove { display: flex; }
-
 .slot-drag-hint {
   position: absolute; bottom: 7px; right: 7px;
   background: rgba(0,0,0,0.55); color: white;
@@ -396,20 +430,6 @@ body {
 }
 .page-slot.filled:hover .slot-drag-hint { display: block; }
 
-.slot-empty-inner {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 4px; color: var(--concrete);
-  pointer-events: none; padding-bottom: 16px;
-}
-.slot-empty-inner .plus { font-size: 1.6rem; opacity: 0.25; }
-.slot-empty-inner .lbl {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.55rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.12em;
-}
-.page-slot.filled .slot-empty-inner { display: none; }
-
-/* ADD TILE */
 .add-tile {
   aspect-ratio: 420 / 297;
   background: white;
@@ -422,11 +442,7 @@ body {
 }
 .add-tile:hover { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
 .add-tile .plus { font-size: 2rem; }
-.add-tile .lbl {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.58rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.12em;
-}
+.add-tile .lbl { font-family: 'Space Mono', monospace; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
 
 /* ── DIAGONAL RULE ── */
 .diagonal-rule {
@@ -444,17 +460,30 @@ body {
   padding: 14px 20px;
   margin-bottom: 24px;
 }
-.filename-box .lbl {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.62rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--teal); margin-bottom: 5px;
+.filename-box .lbl { font-family: 'Space Mono', monospace; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); margin-bottom: 5px; }
+.filename-box .name { font-size: 0.8rem; color: var(--concrete); word-break: break-all; }
+
+/* ── PLAN B ── */
+.planb {
+  background: white;
+  border: 2px dashed var(--gold);
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin-top: 32px;
 }
-.filename-box .name {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.8rem; color: var(--concrete);
-  word-break: break-all;
+.planb h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.15rem;
+  font-weight: 400;
+  margin-bottom: 4px;
 }
+.planb > p { font-size: 0.78rem; color: var(--concrete); margin-bottom: 12px; }
+.planb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) { .planb-grid { grid-template-columns: 1fr; } }
+.planb-card { background: var(--gold-light); border-radius: 3px; padding: 12px 14px; }
+.planb-card h3 { font-family: 'Space Mono', monospace; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 6px; }
+.planb-card ol { margin-left: 18px; }
+.planb-card li { font-size: 0.76rem; margin-bottom: 3px; line-height: 1.5; }
 
 /* ── LOADING ── */
 .loading-overlay {
@@ -468,20 +497,10 @@ body {
   border-radius: 4px; padding: 36px 48px;
   text-align: center; max-width: 360px; width: 90%;
 }
-.loading-card h3 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 1.3rem; font-weight: 400; margin-bottom: 8px;
-}
-.loading-card .status {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.68rem; color: var(--concrete); margin-bottom: 16px;
-}
+.loading-card h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; font-weight: 400; margin-bottom: 8px; }
+.loading-card .status { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--concrete); margin-bottom: 16px; }
 .loading-bar { height: 5px; background: var(--warm-mid); }
-.loading-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--pink), var(--teal));
-  transition: width 0.3s ease;
-}
+.loading-fill { height: 100%; background: linear-gradient(90deg, var(--pink), var(--teal)); transition: width 0.3s ease; }
 .spinner {
   width: 36px; height: 36px;
   border: 3px solid var(--warm-mid);
@@ -545,7 +564,7 @@ footer {
       <h1>Portfolio<br><em>PDF Builder</em></h1>
     </div>
     <div class="header-meta">
-      Upload · arrange<br>↓<br>download PDF
+      20–40 A3 pages<br>↓<br>one PDF file
     </div>
   </header>
 
@@ -554,7 +573,34 @@ footer {
     <div class="notice-icon">⚠</div>
     <div>
       <strong>Important — read before submitting</strong>
-      Your file must open as a <em>PDF document</em> — not a Photoshop file, not a folder of images. When you click the download button below it saves a <strong>.pdf</strong> file. Check it opens correctly in Adobe Acrobat or Preview before uploading to Padlet. Submitting the wrong file type can affect your grade.
+      Your file must be a <em>PDF</em> — not a Photoshop file, not a folder of images. The download button below saves a <strong>.pdf</strong> file. Open it and check it before you upload to Padlet. The wrong file type can affect your grade.
+    </div>
+  </div>
+
+  <!-- WHAT TO HAND IN -->
+  <div class="handin">
+    <div class="handin-title">What to hand in</div>
+    <div class="handin-total">20–40 A3 pages in total · minimum 20 · maximum 40</div>
+
+    <div class="rot-grid">
+      <div class="rot-card">
+        <h3>Rotation 1</h3>
+        <div class="rot-note">All three subjects</div>
+        <div class="rot-row"><span>Fashion Business &amp; Management</span><span>4–8 pages</span></div>
+        <div class="rot-row"><span>Fashion Design &amp; Technology</span><span>4–8 pages</span></div>
+        <div class="rot-row"><span>Fashion Media &amp; Communications</span><span>4–8 pages</span></div>
+      </div>
+      <div class="rot-card r2">
+        <h3>Rotation 2</h3>
+        <div class="rot-note">Choose the <strong>two</strong> subjects you studied</div>
+        <div class="rot-row"><span>Fashion Business &amp; Management</span><span>4–8 pages</span></div>
+        <div class="rot-row"><span>Fashion Design &amp; Technology</span><span>4–8 pages</span></div>
+        <div class="rot-row"><span>Fashion Media &amp; Communications</span><span>4–8 pages</span></div>
+      </div>
+    </div>
+
+    <div class="heading-tip">
+      <strong>Use clear headings.</strong> Start each section with a heading, e.g. <em>Rotation 1 · Fashion Business</em>. Put your pages in order: Rotation 1 first, then Rotation 2.
     </div>
   </div>
 
@@ -582,6 +628,12 @@ footer {
   <!-- PRE-FLIGHT CHECKLIST -->
   <div class="checklist-row" id="checklistRow">
     <label class="check-item" onclick="toggleCheck(this)">
+      <input type="checkbox"> 20–40 pages in total
+    </label>
+    <label class="check-item" onclick="toggleCheck(this)">
+      <input type="checkbox"> Each section has a clear heading
+    </label>
+    <label class="check-item" onclick="toggleCheck(this)">
       <input type="checkbox"> Pages are A3 landscape (420×297mm), 300 dpi
     </label>
     <label class="check-item" onclick="toggleCheck(this)">
@@ -591,14 +643,14 @@ footer {
       <input type="checkbox"> All images referenced — see Harvard guide below
     </label>
     <label class="check-item" onclick="toggleCheck(this)">
-      <input type="checkbox"> File will be checked before uploading to Padlet
+      <input type="checkbox"> PDF opened and checked before uploading to Padlet
     </label>
   </div>
 
   <!-- STATUS BAR -->
   <div class="status-bar">
-    <span class="page-count" id="pageCount">0 pages</span>
-    <div class="progress-wrap">
+    <span class="page-count" id="pageCount">0 pages · need 20</span>
+    <div class="progress-wrap" title="Line marks the 20-page minimum">
       <div class="progress-fill" id="progressFill" style="width:0%"></div>
     </div>
     <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
@@ -609,26 +661,26 @@ footer {
   <div class="drop-zone" id="dropZone" onclick="document.getElementById('bulkInput').click()">
     <div class="drop-zone-icon">⬆</div>
     <h3>Drop all your pages here, or click to select</h3>
-    <p>JPEG or PNG · A3 landscape · sorted by filename automatically · max 40 pages</p>
+    <p>JPEG or PNG · A3 landscape · sorted by filename · 20–40 pages</p>
     <input type="file" id="bulkInput" accept="image/*" multiple style="display:none" onchange="handleBulkUpload(event)">
   </div>
 
   <!-- HOW TO USE -->
   <div class="info-box">
     <strong>How to use</strong>
-    Upload your finished A3 pages above — drag a whole folder in at once if you like, files sort by name. Drag the thumbnails below to reorder. Click any thumbnail to replace it. Hit × to remove. Fill in your name and student ID, then hit Download PDF.
+    Upload your finished A3 pages above. Files sort by name — tip: number them, e.g. <em>01_business.jpg</em>, <em>02_business.jpg</em>. Drag thumbnails to reorder. Click a thumbnail to replace it. Click × to remove. Add your name and ID, then click Download PDF.
   </div>
 
   <!-- FONT REMINDER -->
   <div class="info-box" style="border-color:var(--pink);background:var(--pink-light);">
     <strong style="color:var(--pink);">Typography check</strong>
-    Your pages should use <em>consistent</em> font choices throughout — ideally one heading font and one body font. Body text should be <strong>9–14pt</strong> maximum. Avoid Chalkboard. Good choices for fashion portfolios: Andale Mono, Orator Std, Typewriter Condensed, or a clean sans-serif. Font choices are part of your visual identity and are assessed.
+    Use the <em>same</em> fonts on every page — one heading font and one body font. Body text 9–14pt. Avoid Chalkboard. Good choices: Andale Mono, Orator Std, Typewriter Condensed, or a clean sans-serif.
   </div>
 
   <!-- HARVARD REFERENCING -->
   <div class="ref-box">
     <strong>Harvard referencing reminder</strong>
-    Every image you did not make yourself must be credited on the page it appears. Use this format:
+    Every image you did not make must be credited on the page where it appears:
     <div class="ref-example">Artist, I. (Year) <em>Title of work</em> [medium]. Available at: URL (Accessed: DD Month YYYY).</div>
     <div class="ref-example">Surname, I. (Year) <em>Title of website page</em>. Site name. Available at: URL (Accessed: DD Month YYYY).</div>
     Full guide: <a href="https://hsstokes.github.io/Harvard-Referencing-Guide/" target="_blank" style="color:var(--purple);font-weight:700;">hsstokes.github.io/Harvard-Referencing-Guide</a>
@@ -653,6 +705,30 @@ footer {
     Your images never leave your device — everything is processed in your browser.
   </p>
 
+  <!-- PLAN B -->
+  <div class="planb">
+    <h2>Builder not working? Use one of these instead</h2>
+    <p>Same rules: A3 landscape · one page per slide/page · save as PDF.</p>
+    <div class="planb-grid">
+      <div class="planb-card">
+        <h3>PowerPoint</h3>
+        <ol>
+          <li>Design → Slide Size → <strong>A3, Landscape</strong></li>
+          <li>Drag one page (JPEG) onto each slide</li>
+          <li>File → Export / Save As → <strong>PDF</strong></li>
+        </ol>
+      </div>
+      <div class="planb-card">
+        <h3>InDesign</h3>
+        <ol>
+          <li>File → New → <strong>A3, Landscape</strong>, 20+ pages</li>
+          <li>File → Place → one JPEG on each page</li>
+          <li>File → Export → <strong>Adobe PDF (Print)</strong></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /container -->
 
 <footer>
@@ -664,10 +740,12 @@ footer {
 let pages = [];
 let dragSrcIdx = null;
 const MAX = 40;
+const MIN = 20;
 
 function init() {
   setupDropZone();
   renderGrid();
+  updateStatus();
   ['studentName','studentId','groupId','unitTitle'].forEach(id =>
     document.getElementById(id).addEventListener('input', updateFilename)
   );
@@ -699,17 +777,22 @@ function addFiles(files) {
   const slots = MAX - pages.length;
   if (slots <= 0) { toast('Maximum ' + MAX + ' pages reached'); return; }
   const toAdd = files.slice(0, slots);
+  const results = new Array(toAdd.length);
   let loaded = 0;
-  toAdd.forEach(file => {
+  toAdd.forEach((file, idx) => {
     const r = new FileReader();
     r.onload = e => {
-      pages.push(e.target.result);
+      results[idx] = e.target.result;   /* keep filename order */
       loaded++;
-      if (loaded === toAdd.length) { renderGrid(); updateStatus(); toast(loaded + ' page' + (loaded > 1 ? 's' : '') + ' added'); }
+      if (loaded === toAdd.length) {
+        pages.push(...results);
+        renderGrid(); updateStatus();
+        toast(loaded + ' page' + (loaded > 1 ? 's' : '') + ' added');
+      }
     };
     r.readAsDataURL(file);
   });
-  if (files.length > slots) toast('Only ' + slots + ' slot' + (slots > 1 ? 's' : '') + ' remaining — some files skipped');
+  if (files.length > slots) toast('Only ' + slots + ' slot' + (slots > 1 ? 's' : '') + ' left — some files skipped');
 }
 
 function renderGrid() {
@@ -780,9 +863,16 @@ function clearAll() {
 function updateStatus() {
   const n = pages.length;
   const el = document.getElementById('pageCount');
-  el.textContent = n === 0 ? '0 pages' : n === 1 ? '1 page uploaded' : n + ' pages uploaded';
-  el.className = 'page-count' + (n >= 1 ? ' ready' : '') + (n >= MAX ? ' warning' : '');
-  if (n >= MAX) el.textContent = n + ' pages · max reached';
+  if (n < MIN) {
+    el.textContent = n + ' page' + (n === 1 ? '' : 's') + ' · need ' + (MIN - n) + ' more';
+    el.className = 'page-count' + (n > 0 ? ' warning' : '');
+  } else if (n < MAX) {
+    el.textContent = n + ' pages ✓';
+    el.className = 'page-count ready';
+  } else {
+    el.textContent = n + ' pages ✓ · max reached';
+    el.className = 'page-count ready';
+  }
   document.getElementById('progressFill').style.width = Math.min(100, (n / MAX) * 100) + '%';
   document.getElementById('downloadBtn').disabled = n === 0;
   document.getElementById('downloadBtn2').disabled = n === 0;
@@ -797,6 +887,9 @@ function updateFilename() {
 
 async function buildPDF() {
   if (!pages.length) { toast('Upload at least one page first'); return; }
+  if (pages.length < MIN) {
+    if (!confirm('You have ' + pages.length + ' pages. You need at least ' + MIN + '.\n\nDownload anyway (e.g. to check it)?')) return;
+  }
   const name = document.getElementById('studentName').value;
   const id   = document.getElementById('studentId').value;
   if (!name || !id) { if (!confirm('Add your name and student ID before downloading — or continue anyway?')) return; }
@@ -821,26 +914,14 @@ async function buildPDF() {
       await new Promise(res => {
         const img = new Image();
         img.onload = () => {
-          /* White background */
           pdf.setFillColor(255,255,255);
           pdf.rect(0, 0, W, H, 'F');
-
-          /* Scale image to fill A3 maintaining its aspect ratio.
-             If the image is already A3 landscape it fills edge-to-edge.
-             If it is portrait or different ratio it is scaled to fit
-             within the page and centred — no stretching. */
           const iw = img.naturalWidth  || img.width;
           const ih = img.naturalHeight || img.height;
           if (iw === 0 || ih === 0) { res(); return; }
-
-          const scaleW = W / iw;
-          const scaleH = H / ih;
-          const scale  = Math.min(scaleW, scaleH);   /* fit, not fill */
-          const dw = iw * scale;
-          const dh = ih * scale;
-          const dx = (W - dw) / 2;
-          const dy = (H - dh) / 2;
-
+          const scale = Math.min(W / iw, H / ih);   /* fit, not fill */
+          const dw = iw * scale, dh = ih * scale;
+          const dx = (W - dw) / 2, dy = (H - dh) / 2;
           pdf.addImage(img, 'JPEG', dx, dy, dw, dh, undefined, 'FAST');
           res();
         };

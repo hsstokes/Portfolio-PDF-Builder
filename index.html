@@ -92,7 +92,7 @@ body {
 }
 .notice-banner .notice-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
 .notice-banner p { font-size: 0.82rem; line-height: 1.6; margin: 0; }
-.notice-banner strong {
+.notice-banner strong:first-child {
   font-family: 'Space Mono', monospace;
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -580,9 +580,7 @@ footer {
   <!-- WHAT TO HAND IN -->
   <div class="handin">
     <div class="handin-title">What to hand in</div>
-    <div class="handin-total">20–40 A3 pages in total · minimum 20 · maximum 40</div>
-    <p style="font-size:0.76rem;color:var(--concrete);margin:-8px 0 14px;">Your introduction page and section divider pages do <strong>not</strong> count. You can upload up to 50 files in total.</p>
-
+    <div class="handin-total">20–40 A3 pages · all in one .pdf file · 100MB max</div>
     <div class="rot-grid">
       <div class="rot-card">
         <h3>Rotation 1</h3>
@@ -644,7 +642,7 @@ footer {
       <input type="checkbox"> All images referenced — see Harvard guide below
     </label>
     <label class="check-item" onclick="toggleCheck(this)">
-      <input type="checkbox"> PDF opened and checked before uploading to Padlet
+      <input type="checkbox"> One PDF file, under 100MB, opened and checked
     </label>
   </div>
 
@@ -662,14 +660,14 @@ footer {
   <div class="drop-zone" id="dropZone" onclick="document.getElementById('bulkInput').click()">
     <div class="drop-zone-icon">⬆</div>
     <h3>Drop all your pages here, or click to select</h3>
-    <p>JPEG or PNG · A3 landscape · sorted by filename · up to 50 files (incl. intro &amp; dividers)</p>
+    <p>JPEG only (not PSD) · A3 landscape · sorted by filename</p>
     <input type="file" id="bulkInput" accept="image/*" multiple style="display:none" onchange="handleBulkUpload(event)">
   </div>
 
   <!-- HOW TO USE -->
   <div class="info-box">
     <strong>How to use</strong>
-    Upload your finished A3 pages above. Files sort by name — tip: number them, e.g. <em>01_business.jpg</em>, <em>02_business.jpg</em>. Drag thumbnails to reorder. Click a thumbnail to replace it. Click × to remove. Add your name and ID, then click Download PDF.
+Number your files so they sort in order, e.g. <em>01_intro.jpg</em>, <em>02_business.jpg</em>. Drag thumbnails to reorder. Click × to remove.
   </div>
 
   <!-- FONT REMINDER -->
@@ -705,6 +703,13 @@ footer {
   <p style="text-align:center;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--concrete);">
     Your images never leave your device — everything is processed in your browser.
   </p>
+
+  <!-- FILE TOO BIG -->
+  <div class="info-box" style="border-color:var(--gold);background:var(--gold-light);margin-top:20px;">
+    <strong style="color:var(--gold);">PDF over 100MB?</strong>
+    1. Upload <strong style="display:inline;font-family:inherit;font-size:inherit;text-transform:none;letter-spacing:0;color:inherit;">JPEGs</strong>, not PSD files.<br>
+    2. Open your PDF in Adobe Acrobat → File → Save As Other → <em>Reduced Size PDF</em>.
+  </div>
 
   <!-- PLAN B -->
   <div class="planb">
@@ -941,10 +946,16 @@ async function buildPDF() {
     statusEl.textContent = 'Saving file…';
     await new Promise(r => setTimeout(r, 200));
 
+    const sizeMB = pdf.output('blob').size / (1024 * 1024);
+    if (sizeMB > 100) {
+      overlay.classList.remove('show');
+      if (!confirm('Your PDF is ' + sizeMB.toFixed(0) + 'MB. The limit is 100MB.\n\nDownload it, then reduce it in Adobe Acrobat:\nFile → Save As Other → Reduced Size PDF.\n\nDownload now?')) return;
+    }
+
     const cn = (name || 'Student').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
     const ci = (id || '').replace(/[^a-zA-Z0-9]/g,'');
     pdf.save('Portfolio_' + cn + (ci ? '_' + ci : '') + '.pdf');
-    toast('PDF downloaded — open it to check before submitting!');
+    toast('PDF downloaded (' + sizeMB.toFixed(1) + 'MB) — open it to check before submitting!');
 
   } catch(err) {
     toast('Error: ' + err.message); console.error(err);
